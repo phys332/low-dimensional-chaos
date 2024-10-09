@@ -81,43 +81,7 @@ def main():
     t, values, iterations = fINT(fRHS, fORD, t0, t1, values0, nstep)
 
     # Plot results
-    
-    fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, sharex=True)
-    fig.text(0.5, 0.03, 't', ha='center')
-    fig.text(0.05, 0.25, 'x', va='center', rotation='vertical')
-    fig.text(0.05, 0.5, 'y', va='center', rotation='vertical')
-    fig.text(0.05, 0.75, 'z', va='center', rotation='vertical')
-
-    ax1 = plt.subplot(311)
-    ax1.plot(t, values[0])
-    
-    
-    ax2 = plt.subplot(312)
-    ax2.plot(t, values[1])
-    
-    ax3 = plt.subplot(313)
-    ax3.plot(t, values[2])
-    
-    plt.show()
-    
-    plt.figure(figsize=(18.5, 7.5))
-    
-    plt.subplot(131)
-    plt.plot(values[0], values[1])
-    plt.xlabel('x')
-    plt.ylabel('y')
-    
-    plt.subplot(132)
-    plt.plot(values[0], values[2])
-    plt.xlabel('x')
-    plt.ylabel('z')
-    
-    plt.subplot(133)
-    plt.plot(values[1], values[2])
-    plt.xlabel('y')
-    plt.ylabel('z')
-    
-    plt.show()
+    plt.plot(t, values[0])
 
 if __name__ == "__main__":
     main()
