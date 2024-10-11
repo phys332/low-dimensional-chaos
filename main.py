@@ -107,11 +107,24 @@ def main():
     plt.xlabel('t')
     plt.ylabel('z(t)')
     plt.title('z vs. t')
-    
+
     plt.tight_layout()
+    plt.show()
+    
+    # Plot for all values against t (same plot)
+    plt.figure(num=2,figsize=(5,6),dpi=100,facecolor='white')
+
+    plt.plot(t, x, linestyle='-', linewidth=1.0, label = 'x')
+    plt.plot(t, y, linestyle='-', linewidth=1.0, label = 'y')
+    plt.plot(t, z, linestyle='-', linewidth=1.0, label = 'z')
+    plt.xlabel('t')
+    plt.ylabel('Functions of t')
+    plt.title('x, y, z vs. t')
+    plt.legend()
+    plt.show()
     
     # Plots for all pairwise plots
-    plt.figure(num=2,figsize=(5,6),dpi=100,facecolor='white')
+    plt.figure(num=3,figsize=(5,6),dpi=100,facecolor='white')
     
     plt.subplot(311)
     plt.plot(x, y, linestyle='-', color='black', linewidth=1.0)
@@ -132,6 +145,7 @@ def main():
     plt.title('z vs. y')
     
     plt.tight_layout()
+    plt.show()
     
     # Plot for 3D graph of all variables
     figure = plt.figure(num=3,figsize=(5,6),dpi=100,facecolor='white')
@@ -141,7 +155,6 @@ def main():
     ax.set_ylabel('y(t)')
     ax.set_zlabel('z(t)')
     ax.set_title('3D plot of x(t), y(t), z(t)')
-    
     plt.show()
 
 if __name__ == "__main__":
