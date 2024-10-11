@@ -2,6 +2,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 import numpy as np               
 import matplotlib.pyplot as plt  
+from mpl_toolkits import mplot3d # Import toolkit for 3D plots
 import integrators # Stepper functions and integrator driver
 
 '''Define global variables for use in RHS of ODE'''
@@ -79,9 +80,82 @@ def main():
 
     # Solve for values for each of the dependent variables (X, Y, Z) and for independent variable (t)
     t, values, iterations = fINT(fRHS, fORD, t0, t1, values0, nstep)
+    x = values[0]
+    y = values[1]
+    z = values[2]
 
-    # Plot results
-    plt.plot(t, values[0])
+    # Plots for all values against t
+    plt.figure(num=1,figsize=(5,6),dpi=100,facecolor='white')
+    
+    # X vs. T
+    plt.subplot(311)
+    plt.plot(t, x, linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('t')
+    plt.ylabel('x(t)')
+    plt.title('x vs. t')
+    
+    # Y vs. T
+    plt.subplot(312)
+    plt.plot(t, y, linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('t')
+    plt.ylabel('y(t)')
+    plt.title('y vs. t')
+    
+    # Z vs. T
+    plt.subplot(313)
+    plt.plot(t, z, linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('t')
+    plt.ylabel('z(t)')
+    plt.title('z vs. t')
+
+    plt.tight_layout()
+    plt.show()
+    
+    # Plot for all values against t (same plot)
+    plt.figure(num=2,figsize=(5,6),dpi=100,facecolor='white')
+
+    plt.plot(t, x, linestyle='-', linewidth=1.0, label = 'x')
+    plt.plot(t, y, linestyle='-', linewidth=1.0, label = 'y')
+    plt.plot(t, z, linestyle='-', linewidth=1.0, label = 'z')
+    plt.xlabel('t')
+    plt.ylabel('Functions of t')
+    plt.title('x, y, z vs. t')
+    plt.legend()
+    plt.show()
+    
+    # Plots for all pairwise plots
+    plt.figure(num=3,figsize=(5,6),dpi=100,facecolor='white')
+    
+    plt.subplot(311)
+    plt.plot(x, y, linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('x(t)')
+    plt.ylabel('y(t)')
+    plt.title('y vs. x')
+    
+    plt.subplot(312)
+    plt.plot(x, z, linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('x(t)')
+    plt.ylabel('z(t)')
+    plt.title('z vs. x')
+    
+    plt.subplot(313)
+    plt.plot(y, z, linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('y(t)')
+    plt.ylabel('z(t)')
+    plt.title('z vs. y')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    # Plot for 3D graph of all variables
+    figure = plt.figure(num=3,figsize=(5,6),dpi=100,facecolor='white')
+    ax = plt.axes(projection='3d')
+    ax.plot3D(x, y, z, color='black')
+    ax.set_xlabel('x(t)')
+    ax.set_ylabel('y(t)')
+    ax.set_zlabel('z(t)')
+    ax.set_title('3D plot of x(t), y(t), z(t)')
+    plt.show()
 
 if __name__ == "__main__":
     main()
