@@ -1,4 +1,5 @@
 import numpy as np
+from systemparameters import SystemParameters
 
 '''Forward Euler Step'''
 def euler(fRHS,x0,y0,dx):
@@ -101,8 +102,41 @@ def rk45(fRHS,x0,y0,dx):
 
 '''Backward Euler Step'''
 def backeuler(fRHS,x0,y0,dx):
-    jacobian = np.array([[998, 1998], [-999, -1999]]) # Hard code jacobian matrix as the coefficient matrix of the specific problem
-    y = y0 + dx* np.dot(np.linalg.inv(np.identity(2) - dx*jacobian), fRHS(x0, y0, dx))
+    # Retrieve system parameters
+    sigma = SystemParameters.sigma
+    b = SystemParameters.b
+    r = SystemParameters.r
+    
+    # Pad y0 with zeros if the input vector has less than 6 variables
+    # y0 = np.concatenate([y0, np.zeros(6 - len(y0))]) if len(y0) < 6 else y0
+    
+    # Assign current variables values (doing this as the previous step and not after solving for the next step)
+    x = y0[0]
+    y = y0[1]
+    z = y0[2]
+    #u = y0[3]
+    #v = y0[4]
+    #w = y0[5]
+    
+    # Hard code 3x3 Jacobian matrix
+    jacobian3 = np.array([[-sigma, sigma, 0], 
+                         [(r-z), -1, -x], 
+                         [y, x, -b]]) 
+    
+    # Pad y0 with zeros if the input vector has less than 6 variables
+    # y0 = np.concatenate([y0, np.zeros(6 - len(y0))]) if len(y0) < 6 else y0
+    #
+    # Hard code 6x6 Jacobian matrix
+    # jacobian6 = np.array([[-sigma, sigma, 0, 0, 0, 0], 
+    #                     [(r-z), -1, -x, 0, 0, 0], 
+    #                     [y, x, -b, 0, 0, 0], 
+    #                     [0, 0, 0, -sigma, sigma, 0], 
+    #                     [(r-w), 0, 0, 0, -1, x], 
+    #                     [v, 0, 0, 0, x, -b]]) 
+    
+    rhs_evaluation = fRHS(x0, y0, dx)
+                         
+    y = y0 + dx* np.dot(np.linalg.inv(np.identity(3) - dx*jacobian3), rhs_evaluation)
     return y,1
 
 '''Driver for initial value problem'''

@@ -4,24 +4,15 @@ import numpy as np
 import matplotlib.pyplot as plt  
 from mpl_toolkits import mplot3d # Import toolkit for 3D plots
 import integrators # Stepper functions and integrator driver
+from systemparameters import SystemParameters
 
-'''Define global variables for use in RHS of ODE'''
-def set_odepar(par):
-    global odepar
-    odepar = par
-
-'''Retrieve global variables for use in RHS of ODE'''
-def get_odepar():
-    global odepar
-    return odepar
 
 '''Calculates RHS for Lorenz System sender (Part 1)'''
 def dydx_sender(t, values, dx):
-    # Retrieve constants
-    constants = get_odepar()
-    sigma = constants[0]
-    b = constants[1]
-    r = constants[2]
+    # Retrieve constants (class variables of SystemParameters)
+    sigma = SystemParameters.sigma
+    b = SystemParameters.b
+    r = SystemParameters.r
 
     # Unpackage values input
     x = values[0]
@@ -72,7 +63,10 @@ def main():
     sigma = 10
     b = 8.0/3
     r = args.r
-    set_odepar(np.array([sigma, b, r]))
+    
+    SystemParameters.sigma = sigma
+    SystemParameters.b = b
+    SystemParameters.r = args.r
 
     # Set driver and RHS ODE definitions
     fINT = integrators.ode_ivp
