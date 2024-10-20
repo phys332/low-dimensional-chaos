@@ -60,44 +60,44 @@ def rk45single(fRHS,x0,y0,dx):
 '''Runge-Kutta 4/5 Adaptive Step'''
 def rk45(fRHS,x0,y0,dx):
     pshrink = -0.25
-    pgrow   = -0.2
-    safe    = 0.9
-    errcon  = 1.89e-4
-    eps     = 1e-6                                          # this should depend on problem. Accuracy.
-    maxit   = 100000                                        # this should depend on problem
-    xt      = 0.0                                           # temporary independent variable: will count up to dx.
-    x1      = x0
-    it      = 0                                             # iteration counter, as safeguard
-    n       = y0.size
-    dydx    = fRHS(x0,y0,dx)
-    y1      = y0
-    y2      = y0
-    dxtry   = dx                                            # starting guess for step size    
-    dxtmp   = dx
-    idone   = 0
+    pgrow = -0.2
+    safe = 0.9
+    errcon = 1.89e-4
+    eps = 1e-6 # Accuracy
+    maxit = 100000                                       
+    xt = 0.0 # Temporary independent variable (will count up to dx)
+    x1 = x0
+    it = 0 # Iteration counter (safeguard)
+    n  = y0.size
+    dydx = fRHS(x0,y0,dx)
+    y1 = y0
+    y2 = y0
+    dxtry = dx # Starting guess for step size   
+    dxtmp = dx
+    idone = False
     while ((xt < dx) and (it < maxit)):
-        yscal = np.abs(y1) + np.abs(dxtry*dydx)             # error scaling on last timestep, see NR92, sec 16.2
-        idone = 0                                           # reset idone
-        while (not idone):                                  # figure out an acceptable stepsize
-            y2,yerr = rk45single(fRHS,x1,y1,dxtry)     # keep recalculating y2 using current trial step
+        yscal = np.abs(y1) + np.abs(dxtry*dydx) # Error scaling on last timestep, see NR92, sec 16.2
+        idone = False # Reset idone
+        while (not idone): # Figure out an acceptable stepsize
+            y2,yerr = rk45single(fRHS,x1,y1,dxtry) # Keep recalculating y2 using current trial step
             errmax  = np.max(np.abs(yerr/yscal)/eps)
-            if (errmax > 1.0):                              # stepsize too large - reduce
+            if (errmax > 1.0): # Stepsize too large so reduce
                 dxtmp = dxtry*safe*np.power(errmax,pshrink)
                 dxtry = np.max(np.array([dxtmp,0.1*dxtry])) # warning! This is only for dxtry > 0.
                 xnew  = xt + dxtry
                 if (xnew == xt):
                     raise Exception('[step_rk45]: xnew == xt. dx1 = %13.5e' % (dxtry))
-            else:                                           # stepsize ok - we're done with the trial loop
-                idone = 1
-        y1 = y2                                             # update so that integration is advanced at next iteration.
+            else: # Stepsize ok (done with the trial loop)
+                idone = True
+        y1 = y2 # Update so that integration is advanced at next iteration.
         it = it+1
-        if (errmax > errcon):                               # if the error is larger than safety, reduce growth rate
+        if (errmax > errcon): # If the error is larger than safety, reduce growth rate
             dxnext = safe*dxtry*np.power(errmax,pgrow)
-        else:                                               # if error less than safety, increase by factor of 5.
+        else: # If error less than safety, increase by factor of 5.
             dxnext = 5.0*dxtry
-        x1    = x1 + dxtry
-        xt    = xt + dxtry
-        dxtry = np.min(np.array([dx-xt,dxnext]))            # guess next timestep - make sure it's flush with dx.
+        x1 = x1 + dxtry
+        xt = xt + dxtry
+        dxtry = np.min(np.array([dx-xt,dxnext])) # Guess next timestep - make sure it's flush with dx.
     return y2,it
 
 '''Backward Euler Step'''
@@ -107,36 +107,31 @@ def backeuler(fRHS,x0,y0,dx):
     b = SystemParameters.b
     r = SystemParameters.r
     
-    # Pad y0 with zeros if the input vector has less than 6 variables
-    # y0 = np.concatenate([y0, np.zeros(6 - len(y0))]) if len(y0) < 6 else y0
-    
     # Assign current variables values (doing this as the previous step and not after solving for the next step)
     x = y0[0]
     y = y0[1]
     z = y0[2]
-    #u = y0[3]
-    #v = y0[4]
-    #w = y0[5]
     
-    # Hard code 3x3 Jacobian matrix
-    jacobian3 = np.array([[-sigma, sigma, 0], 
-                         [(r-z), -1, -x], 
-                         [y, x, -b]]) 
-    
-    # Pad y0 with zeros if the input vector has less than 6 variables
-    # y0 = np.concatenate([y0, np.zeros(6 - len(y0))]) if len(y0) < 6 else y0
-    #
-    # Hard code 6x6 Jacobian matrix
-    # jacobian6 = np.array([[-sigma, sigma, 0, 0, 0, 0], 
-    #                     [(r-z), -1, -x, 0, 0, 0], 
-    #                     [y, x, -b, 0, 0, 0], 
-    #                     [0, 0, 0, -sigma, sigma, 0], 
-    #                     [(r-w), 0, 0, 0, -1, x], 
-    #                     [v, 0, 0, 0, x, -b]]) 
+    # Add check to see how many values were included with y0 (determining if receiver is included)
+    if (len(y0) > 3):
+        u = y0[3]
+        v = y0[4]
+        w = y0[5]
+        
+        jacobian = np.array([[-sigma, sigma, 0, 0, 0, 0], 
+                             [(r-z), -1, -x, 0, 0, 0], 
+                             [y, x, -b, 0, 0, 0], 
+                             [0, 0, 0, -sigma, sigma, 0], 
+                             [(r-w), 0, 0, 0, -1, x], 
+                             [v, 0, 0, 0, x, -b]])
+    else:
+        jacobian = np.array([[-sigma, sigma, 0], 
+                             [(r-z), -1, -x], 
+                             [y, x, -b]]) 
     
     rhs_evaluation = fRHS(x0, y0, dx)
                          
-    y = y0 + dx* np.dot(np.linalg.inv(np.identity(3) - dx*jacobian3), rhs_evaluation)
+    y = y0 + dx* np.dot(np.linalg.inv(np.identity(len(y0)) - dx*jacobian), rhs_evaluation)
     return y,1
 
 '''Driver for initial value problem'''
