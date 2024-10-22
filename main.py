@@ -4,35 +4,58 @@ import numpy as np
 import matplotlib.pyplot as plt  
 from mpl_toolkits import mplot3d # Import toolkit for 3D plots
 import integrators # Stepper functions and integrator driver
+from systemparameters import SystemParameters
 
-'''Define global variables for use in RHS of ODE'''
-def set_odepar(par):
-    global odepar
-    odepar = par
 
-'''Retrieve global variables for use in RHS of ODE'''
-def get_odepar():
-    global odepar
-    return odepar
+'''
+Calculates RHS for Lorenz System sender
 
-'''Calculates RHS for Lorenz System sender (Part 1)'''
+Sender is responsible for calling the receiver in the event receiver values are specified
+'''
 def dydx_sender(t, values, dx):
-    # Retrieve constants
-    constants = get_odepar()
-    sigma = constants[0]
-    b = constants[1]
-    r = constants[2]
+    # Retrieve constants (class variables of SystemParameters)
+    sigma = SystemParameters.sigma
+    b = SystemParameters.b
+    r = SystemParameters.r
 
-    # Unpackage values input
+    # Unpackage values  (constant for case of sender and receiver)
     x = values[0]
     y = values[1]
     z = values[2]
 
-    # Define RHS for system
+    # Define RHS for sender system
     dydx = np.zeros(3)
     dydx[0] = sigma*(y-x)
     dydx[1] = r*x - y - x*z
     dydx[2] = x*y - b*z
+    
+    # Check if receiver values are set in this time step
+    if (len(values) > 3):
+        receiver = dydx_receiver(t, values, dx)
+        dydx = np.concatenate((dydx, receiver), axis=0)
+    
+    return dydx
+
+'''Calculates RHS for Lorenz System receiver'''
+def dydx_receiver(t, values, dx):
+    # Will need to come up with an intelligent way to check if the receiver is perturbed (just pass in another index with value of s? - say s= values[6] ?)
+    
+    # Retrieve constants (class variables of SystemParameters)
+    sigma = SystemParameters.sigma
+    b = SystemParameters.b
+    r = SystemParameters.r
+
+    # Unpackage values
+    x = values[0] # Using x as the previous value and not the value calculated above in 
+    u = values[3]
+    v = values[4]
+    w = values[5]
+
+    # Define RHS for receiver system
+    dydx = np.zeros(3)
+    dydx[0] = sigma*(v-u)
+    dydx[1] = r*x - v - x*w
+    dydx[2] = x*v - b*w
     
     return dydx
 
@@ -40,8 +63,9 @@ def dydx_sender(t, values, dx):
 def main():
     # Expect integrator and r value inputs
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
-    parser.add_argument("stepper", type=str, default='euler', help="Stepping function\n")
+    parser.add_argument("stepper", type=str, default='euler', help="Stepping function")
     parser.add_argument("r", type=float, default=10, help="Steepness of temperature gradient")
+    parser.add_argument("--receiver", action='store_true', help="Flag to include receiver ODEs in system") # Optional arguement for included additional ODEs
     args   = parser.parse_args()
     
     # Determine Stepper
@@ -57,22 +81,31 @@ def main():
         fORD = integrators.backeuler
     else:
         raise Exception("invalid stepper %s" % (args.stepper))
-
-    # Initialization
-    # Assuming Lorenz system is always a initial-value problem
+    
+    # Initialization (assuming Lorenz system is always an initial-value problem)
     nstep = 10000
     t0 = 0
     t1 = 100
+    
     x0 = 10
     y0 = 10
     z0 = 10
     values0 = np.array([x0, y0, z0])
+    
+    # Determine presence of receiver system (in addition to sender)
+    if args.receiver:
+        u0 = 10
+        v0 = 10
+        w0 = 10
+        values0 = np.append(values0, [u0, v0, w0])
 
-    # Needed constants
+    # Needed constants (using standard values for the Lorenz System for sigma and and passing in steepness of temperature gradient r as arguement)
     sigma = 10
     b = 8.0/3
     r = args.r
-    set_odepar(np.array([sigma, b, r]))
+    SystemParameters.sigma = sigma
+    SystemParameters.b = b
+    SystemParameters.r = args.r
 
     # Set driver and RHS ODE definitions
     fINT = integrators.ode_ivp
