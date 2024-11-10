@@ -5,15 +5,14 @@ import matplotlib.pyplot as plt
 
 # will need pyaudio installed to work -- was planning on installing and uninstalling it after every use
 
-def record_audio_signal(output_filename="signal.wav"):
+def record_audio_signal(duration, output_filename="signal.wav"):
     """
     Function for recording an audio signal for use
 
     output_filename: file name to be used when saving the signal recorded
     """
     # Parameters for recording
-    duration = 5  # seconds
-    sample_rate = 44100  # sample rate in Hz
+    sample_rate = 20000  # sample rate in Hz
     channels = 1  # not stereo
     chunk = 1024  # size of each buffer chunk
 
@@ -52,6 +51,7 @@ def record_audio_signal(output_filename="signal.wav"):
     print(f"Audio saved as '{output_filename}'.")
     return output_filename
 
+
 def load_audio_signal(output_filename="signal.wav"):
     """
     Loads the .wav file passed in, shoudl typically be used in combination with the above method 
@@ -81,6 +81,7 @@ def load_audio_signal(output_filename="signal.wav"):
         
     return normalized_audio_array
 
+
 def square_wave_signal(length=5):
     """
     Generates a random binary signal
@@ -96,19 +97,11 @@ def square_wave_signal(length=5):
     return signal
 
 
+'''Record generic audio signal (voice or song)'''
+def main():
+    record_audio_signal(5)
+    
 
 if __name__ == "__main__":
-    length = 10
-    # signal = square_wave_signal(10)
-    #record_audio_signal()
-    signal = load_audio_signal()
-    xs = np.arange(1, length + 1, 1)
-
+    main()
     
-    # plot the audio signal
-    # -----------------
-    # plt.plot(signal)
-    # plt.show()
-
-
-    print(signal)

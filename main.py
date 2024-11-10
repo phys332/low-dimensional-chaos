@@ -70,12 +70,15 @@ def dydx_receiver(t, values, dx):
     
     return dydx
 
+
+''''Manually finding local maxima in plot of z'''
 def find_max(z):
     z_left = z[:-2]
     z_center = z[1:-1]
     z_right = z[2:]
     is_max = (z_center > z_left) & (z_center > z_right)
     return z_center[is_max]
+
 
 ''''''
 def main():
@@ -102,7 +105,7 @@ def main():
         raise Exception("invalid stepper %s" % (args.stepper))
     
     # Initialization (assuming Lorenz system is always an initial-value problem)
-    nstep = 10000
+    nstep = 100000
     t0 = 0
     t1 = 100
     
