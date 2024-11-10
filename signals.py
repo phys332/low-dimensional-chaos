@@ -100,7 +100,7 @@ def square_wave_signal(length=5):
 
 '''Record generic audio signal (voice or song)'''
 def main():
-    record_audio_signal(5)
+    record_audio_signal(100)
     
 
 if __name__ == "__main__":
