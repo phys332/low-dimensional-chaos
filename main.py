@@ -225,7 +225,6 @@ def main():
     plt.show()
     
     # Plot for original signal
-    plt.figure(num=6,figsize=(5,6),dpi=100,facecolor='white')
     plt.plot(t, SystemParameters.perturbation, linestyle='-', color='black', linewidth=1.0)
     plt.xlabel('t')
     plt.ylabel('s(t)')
