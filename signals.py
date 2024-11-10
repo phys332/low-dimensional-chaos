@@ -1,55 +1,8 @@
-import pyaudio
 import wave
 import numpy as np
 import matplotlib.pyplot as plt
 
-# will need pyaudio installed to work -- was planning on installing and uninstalling it after every use
 
-def record_audio_signal(duration, output_filename="signal.wav"):
-    """
-    Function for recording an audio signal for use
-
-    output_filename: file name to be used when saving the signal recorded
-    """
-    # Parameters for recording
-    sample_rate = 1000  # sample rate in Hz
-    channels = 1  # not stereo
-    chunk = 1024  # size of each buffer chunk
-
-    # Initialize PyAudio
-    p = pyaudio.PyAudio()
-
-    # Open a stream for recording
-    stream = p.open(format=pyaudio.paInt16,
-                    channels=channels,
-                    rate=sample_rate,
-                    input=True,
-                    frames_per_buffer=chunk)
-
-    print("Recording...")
-
-    # Record data in chunks
-    frames = []
-    for _ in range(0, int(sample_rate / chunk * duration)):
-        data = stream.read(chunk)
-        frames.append(data)
-
-    print("Recording complete.")
-
-    # Stop and close the stream
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
-    # Save recorded data to a .wav file
-    with wave.open(output_filename, 'wb') as wf:
-        wf.setnchannels(channels)
-        wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
-        wf.setframerate(sample_rate)
-        wf.writeframes(b''.join(frames))
-
-    print(f"Audio saved as '{output_filename}'.")
-    return output_filename
 
 
 def load_audio_signal(output_filename="signal.wav"):
@@ -78,7 +31,7 @@ def load_audio_signal(output_filename="signal.wav"):
 
         max_value = np.max(audio_array)
         normalized_audio_array = audio_array / max_value
-        normalized_audio_array = np.append(normalized_audio_array, np.zeros(100000-normalized_audio_array.shape[0]))
+        normalized_audio_array = np.append(normalized_audio_array, np.zeros(100001-normalized_audio_array.shape[0]))
         
     return normalized_audio_array
 
@@ -100,7 +53,7 @@ def square_wave_signal(length=5):
 
 '''Record generic audio signal (voice or song)'''
 def main():
-    record_audio_signal(5)
+    return
     
 
 if __name__ == "__main__":

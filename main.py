@@ -145,19 +145,11 @@ def main():
     x = values[0]
     y = values[1]
     z = values[2]
-
-    # FFT
-    z_norm = z - np.mean(z)
-    plt.plot(fftfreq(nstep, t[1]-t[0])[:nstep//2], 2.0/nstep * np.abs(fft(z_norm)[0:nstep//2]))
-    plt.xlabel('frequency')
-    plt.ylabel('amplitude')
-    plt.title('FFT for z(t)')
-    plt.show()
-
-    # Lorenz map
-    z_n = find_peaks(z)[0]
-    plt.scatter(z[z_n[:-1]], z[z_n[1:]])
-    plt.show()
+    
+    if (len(values) > 3):
+        u = values[3]
+        v = values[4]
+        w = values[5]
 
     # Plots for all values against t
     plt.figure(num=1,figsize=(5,6),dpi=100,facecolor='white')
@@ -187,7 +179,7 @@ def main():
     plt.show()
     
     # Plots for all pairwise plots
-    plt.figure(num=3,figsize=(5,6),dpi=100,facecolor='white')
+    plt.figure(num=2,figsize=(5,6),dpi=100,facecolor='white')
     
     plt.subplot(311)
     plt.plot(x, y, linestyle='-', color='black', linewidth=1.0)
@@ -211,7 +203,6 @@ def main():
     plt.show()
     
     # Plot for 3D graph of all variables
-    figure = plt.figure(num=3,figsize=(5,6),dpi=100,facecolor='white')
     ax = plt.axes(projection='3d')
     ax.plot3D(x, y, z, color='black')
     ax.set_xlabel('x(t)')
@@ -220,10 +211,36 @@ def main():
     ax.set_title('3D plot of x(t), y(t), z(t)')
     plt.show()
     
-    # Plot for original signal
+    # FFT
+    z_norm = z - np.mean(z)
+    plt.plot(fftfreq(nstep, t[1]-t[0])[:nstep//2], 2.0/nstep * np.abs(fft(z_norm)[0:nstep//2]))
+    plt.xlabel('frequency')
+    plt.ylabel('amplitude')
+    plt.title('FFT for z(t)')
+    plt.show()
+
+    # Lorenz map
+    z_n = find_peaks(z)[0]
+    plt.scatter(z[z_n[:-1]], z[z_n[1:]])
+    plt.show()
     
+    # Plot for original signal
+    plt.figure(num=6,figsize=(5,6),dpi=100,facecolor='white')
+    plt.plot(t, SystemParameters.perturbation, linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('t')
+    plt.ylabel('s(t)')
+    plt.title('Original Signal vs. t')
+    plt.show()
     
     # Plot for recovered signal
+    x_perturbed = x + SystemParameters.perturbation
+    recovered_signal = x_perturbed - u
+    plt.figure(num=6,figsize=(5,6),dpi=100,facecolor='white')
+    plt.plot(t, recovered_signal, linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('t')
+    plt.ylabel('X(t) - u')
+    plt.title('Recovered Signal vs. t')
+    plt.show()
     
 
 if __name__ == "__main__":
