@@ -1,12 +1,13 @@
 import argparse	
 from argparse import RawTextHelpFormatter
-import numpy as np               
+import numpy as np   
 import matplotlib.pyplot as plt  
 from mpl_toolkits import mplot3d # Import toolkit for 3D plots
 import integrators # Stepper functions and integrator driver
+import signals # Signal functions
 from systemparameters import SystemParameters
 from scipy.fft import fft, fftfreq
-import signals
+from scipy.signal import find_peaks
 
 '''
 Calculates RHS for Lorenz System sender
@@ -68,6 +69,13 @@ def dydx_receiver(t, values, dx):
         dydx[2] = x*v - b*w
     
     return dydx
+
+def find_max(z):
+    z_left = z[:-2]
+    z_center = z[1:-1]
+    z_right = z[2:]
+    is_max = (z_center > z_left) & (z_center > z_right)
+    return z_center[is_max]
 
 ''''''
 def main():
@@ -137,10 +145,16 @@ def main():
     z = values[2]
 
     # FFT
-    plt.plot(fftfreq(nstep, t[1]-t[0])[:nstep//2], 2.0/nstep * np.abs(fft(z)[0:nstep//2]))
+    z_norm = z - np.mean(z)
+    plt.plot(fftfreq(nstep, t[1]-t[0])[:nstep//2], 2.0/nstep * np.abs(fft(z_norm)[0:nstep//2]))
     plt.xlabel('frequency')
     plt.ylabel('amplitude')
     plt.title('FFT for z(t)')
+    plt.show()
+
+    # Lorenz map
+    z_n = find_peaks(z)[0]
+    plt.scatter(z[z_n[:-1]], z[z_n[1:]])
     plt.show()
 
     # Plots for all values against t
