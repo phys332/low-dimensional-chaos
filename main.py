@@ -40,8 +40,6 @@ def dydx_sender(t, values, dx):
 
 '''Calculates RHS for Lorenz System receiver'''
 def dydx_receiver(t, values, dx):
-    # Will need to come up with an intelligent way to check if the receiver is perturbed (just pass in another index with value of s? - say s= values[6] ?)
-    
     # Retrieve constants (class variables of SystemParameters)
     sigma = SystemParameters.sigma
     b = SystemParameters.b
@@ -55,10 +53,11 @@ def dydx_receiver(t, values, dx):
 
     # Define RHS for receiver system
     dydx = np.zeros(3)
-    if SystemParameters.perturbation:
+    if (SystemParameters.perturbation is not None):
         # Add pertubration if present
         perturbation = SystemParameters.perturbation
-        x_perturbed = x + perturbation[t-1]
+        index = SystemParameters.perturbation_index
+        x_perturbed = x + perturbation[index]
         
         dydx[0] = sigma*(v-u)
         dydx[1] = r*x_perturbed - v - x_perturbed*w
@@ -67,7 +66,7 @@ def dydx_receiver(t, values, dx):
         dydx[0] = sigma*(v-u)
         dydx[1] = r*x - v - x*w
         dydx[2] = x*v - b*w
-    
+
     return dydx
 
 
@@ -220,6 +219,11 @@ def main():
     ax.set_zlabel('z(t)')
     ax.set_title('3D plot of x(t), y(t), z(t)')
     plt.show()
+    
+    # Plot for original signal
+    
+    
+    # Plot for recovered signal
     
 
 if __name__ == "__main__":

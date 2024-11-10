@@ -144,6 +144,8 @@ def ode_ivp(fRHS, fORD, t0, t1, values0, nstep):
     it = np.zeros(nstep+1)
 
     for k in range(1,nstep+1):
-        dependents[:,k], it[k] = fORD(fRHS,independent[k-1], dependents[:,k-1], dx)
+        index = k-1
+        SystemParameters.perturbation_index = index
+        dependents[:,k], it[k] = fORD(fRHS,independent[index], dependents[:,index], dx)
 
     return independent, dependents, it

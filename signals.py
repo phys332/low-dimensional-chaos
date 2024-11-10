@@ -12,7 +12,7 @@ def record_audio_signal(duration, output_filename="signal.wav"):
     output_filename: file name to be used when saving the signal recorded
     """
     # Parameters for recording
-    sample_rate = 20000  # sample rate in Hz
+    sample_rate = 1000  # sample rate in Hz
     channels = 1  # not stereo
     chunk = 1024  # size of each buffer chunk
 
@@ -78,6 +78,7 @@ def load_audio_signal(output_filename="signal.wav"):
 
         max_value = np.max(audio_array)
         normalized_audio_array = audio_array / max_value
+        normalized_audio_array = np.append(normalized_audio_array, np.zeros(100000-normalized_audio_array.shape[0]))
         
     return normalized_audio_array
 
