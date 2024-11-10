@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt  
 from mpl_toolkits import mplot3d # Import toolkit for 3D plots
 import integrators # Stepper functions and integrator driver
+import signals # Signal functions
 from systemparameters import SystemParameters
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
@@ -33,7 +34,7 @@ def dydx_sender(t, values, dx):
     # Check if receiver values are set in this time step
     if (len(values) > 3):
         receiver = dydx_receiver(t, values, dx)
-        dydx = np.concatenate((dydx, receiver), axis=0)
+        dydx = np.append(dydx, receiver, axis=0)
     
     return dydx
 
@@ -47,16 +48,25 @@ def dydx_receiver(t, values, dx):
     r = SystemParameters.r
 
     # Unpackage values
-    x = values[0] # Using x as the previous value and not the value calculated above in 
+    x = values[0] # Using x as the previous value and not the value calculated above
     u = values[3]
     v = values[4]
     w = values[5]
 
     # Define RHS for receiver system
     dydx = np.zeros(3)
-    dydx[0] = sigma*(v-u)
-    dydx[1] = r*x - v - x*w
-    dydx[2] = x*v - b*w
+    if SystemParameters.perturbation:
+        # Add pertubration if present
+        perturbation = SystemParameters.perturbation
+        x_perturbed = x + perturbation[t-1]
+        
+        dydx[0] = sigma*(v-u)
+        dydx[1] = r*x_perturbed - v - x_perturbed*w
+        dydx[2] = x_perturbed*v - b*w
+    else:
+        dydx[0] = sigma*(v-u)
+        dydx[1] = r*x - v - x*w
+        dydx[2] = x*v - b*w
     
     return dydx
 
@@ -74,6 +84,7 @@ def main():
     parser.add_argument("stepper", type=str, default='euler', help="Stepping function")
     parser.add_argument("r", type=float, default=10, help="Steepness of temperature gradient")
     parser.add_argument("--receiver", action='store_true', help="Flag to include receiver ODEs in system") # Optional arguement for included additional ODEs
+    parser.add_argument("--perturbation", type=str, default=None, help="Optional kind of perturbation to include in the system")  # Optional text argument
     args   = parser.parse_args()
     
     # Determine Stepper
@@ -98,19 +109,27 @@ def main():
     x0 = 10
     y0 = 10
     z0 = 10
-    values0 = np.array([x0, y0, z0])
+    values0 = [x0, y0, z0]
     
     # Determine presence of receiver system (in addition to sender)
     if args.receiver:
         u0 = 10
         v0 = 10
         w0 = 10
-        values0 = np.append(values0, [u0, v0, w0])
+        values0.extend([u0, v0, w0])
+    
+    values0 = np.array(values0)
+    
+    # Determine presence of perturbation (on the receiver system)
+    if (args.perturbation == "binary"):
+        SystemParameters.perturbation = signals.square_wave_signal()
+    elif (args.perturbation == "recording"):
+        SystemParameters.perturbation = signals.load_audio_signal()
 
     # Needed constants (using standard values for the Lorenz System for sigma and and passing in steepness of temperature gradient r as arguement)
     sigma = 10
     b = 8.0/3
-    r = args.r
+    
     SystemParameters.sigma = sigma
     SystemParameters.b = b
     SystemParameters.r = args.r
