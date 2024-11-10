@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d # Import toolkit for 3D plots
 import integrators # Stepper functions and integrator driver
 from systemparameters import SystemParameters
-
+from scipy.fft import fft, fftfreq
 
 '''
 Calculates RHS for Lorenz System sender
@@ -117,6 +117,13 @@ def main():
     y = values[1]
     z = values[2]
 
+    # FFT
+    plt.plot(fftfreq(nstep, t[1]-t[0])[:nstep//2], 2.0/nstep * np.abs(fft(z)[0:nstep//2]))
+    plt.xlabel('frequency')
+    plt.ylabel('amplitude')
+    plt.title('FFT for z(t)')
+    plt.show()
+
     # Plots for all values against t
     plt.figure(num=1,figsize=(5,6),dpi=100,facecolor='white')
     
@@ -142,18 +149,6 @@ def main():
     plt.title('z vs. t')
 
     plt.tight_layout()
-    plt.show()
-    
-    # Plot for all values against t (same plot)
-    plt.figure(num=2,figsize=(5,6),dpi=100,facecolor='white')
-
-    plt.plot(t, x, linestyle='-', linewidth=1.0, label = 'x')
-    plt.plot(t, y, linestyle='-', linewidth=1.0, label = 'y')
-    plt.plot(t, z, linestyle='-', linewidth=1.0, label = 'z')
-    plt.xlabel('t')
-    plt.ylabel('Functions of t')
-    plt.title('x, y, z vs. t')
-    plt.legend()
     plt.show()
     
     # Plots for all pairwise plots
@@ -189,6 +184,7 @@ def main():
     ax.set_zlabel('z(t)')
     ax.set_title('3D plot of x(t), y(t), z(t)')
     plt.show()
+    
 
 if __name__ == "__main__":
     main()
