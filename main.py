@@ -2,9 +2,9 @@ import argparse
 from argparse import RawTextHelpFormatter
 import numpy as np   
 import matplotlib.pyplot as plt  
-from mpl_toolkits import mplot3d # Import toolkit for 3D plots
 import integrators # Stepper functions and integrator driver
 import signals # Signal functions
+from mpl_toolkits import mplot3d # Import toolkit for 3D plots
 from systemparameters import SystemParameters
 from scipy.fft import fft, fftfreq
 from scipy.signal import find_peaks
@@ -79,7 +79,7 @@ def find_max(z):
     return z_center[is_max]
 
 
-''''''
+'''Create necessary plots and parameterize signals as needed for perturbation'''
 def main():
     # Expect integrator and r value inputs
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -104,7 +104,7 @@ def main():
         raise Exception("invalid stepper %s" % (args.stepper))
     
     # Initialization (assuming Lorenz system is always an initial-value problem)
-    nstep = 100000
+    nstep = 10000
     t0 = 0
     t1 = 100
     
@@ -124,9 +124,11 @@ def main():
     
     # Determine presence of perturbation (on the receiver system)
     if (args.perturbation == "binary"):
-        SystemParameters.perturbation = signals.square_wave_signal()
+        SystemParameters.perturbation = signals.load_digital_signal(nstep+1, 1, 1)
     elif (args.perturbation == "recording"):
-        SystemParameters.perturbation = signals.load_audio_signal()
+        SystemParameters.perturbation = signals.load_audio_signal(length=nstep+1)
+    elif (args.perturbation == "constant"):
+        SystemParameters.perturbation = signals.load_constant_signal(nstep+1, 1)
 
     # Needed constants (using standard values for the Lorenz System for sigma and and passing in steepness of temperature gradient r as arguement)
     sigma = 10
@@ -203,6 +205,7 @@ def main():
     plt.show()
     
     # Plot for 3D graph of all variables
+    plt.figure(num=3,figsize=(5,6),dpi=100,facecolor='white')
     ax = plt.axes(projection='3d')
     ax.plot3D(x, y, z, color='black')
     ax.set_xlabel('x(t)')
@@ -212,33 +215,44 @@ def main():
     plt.show()
     
     # FFT
+    plt.figure(num=4,figsize=(5,6),dpi=100,facecolor='white')
     z_norm = z - np.mean(z)
-    plt.plot(fftfreq(nstep, t[1]-t[0])[:nstep//2], 2.0/nstep * np.abs(fft(z_norm)[0:nstep//2]))
+    plt.plot(fftfreq(nstep, t[1]-t[0])[:nstep//2], 2.0/nstep * np.abs(fft(z_norm)[0:nstep//2]), linestyle='-', color='black', linewidth=1.0)
     plt.xlabel('frequency')
     plt.ylabel('amplitude')
     plt.title('FFT for z(t)')
-    plt.show()
-
-    # Lorenz map
+    
+    # Lorenz Map
+    plt.figure(num=5,figsize=(6,8),dpi=100,facecolor='white')
     z_n = find_peaks(z)[0]
-    plt.scatter(z[z_n[:-1]], z[z_n[1:]])
+    plt.scatter(z[z_n[:-1]], z[z_n[1:]], color='black')
+    plt.xlabel('z_{n} (Current Peak)')
+    plt.ylabel('z_{n+1} (Next Peak)')
+    plt.title('Lorenz Map')
     plt.show()
     
-    # Plot for original signal
+    # Plot for original signal and recovered signal
+    plt.figure(num=6,figsize=(10,10),dpi=100,facecolor='white')
+    plt.subplot(221)
     plt.plot(t, SystemParameters.perturbation, linestyle='-', color='black', linewidth=1.0)
     plt.xlabel('t')
     plt.ylabel('s(t)')
     plt.title('Original Signal vs. t')
-    plt.show()
     
-    # Plot for recovered signal
+    plt.subplot(223)
     x_perturbed = x + SystemParameters.perturbation
     recovered_signal = x_perturbed - u
-    plt.figure(num=6,figsize=(5,6),dpi=100,facecolor='white')
     plt.plot(t, recovered_signal, linestyle='-', color='black', linewidth=1.0)
     plt.xlabel('t')
     plt.ylabel('X(t) - u')
     plt.title('Recovered Signal vs. t')
+    
+    # Log difference
+    plt.figure(num=7,figsize=(5,8),dpi=100,facecolor='white')
+    plt.plot(t, np.log(np.abs(recovered_signal - SystemParameters.perturbation)), linestyle='-', color='black', linewidth=1.0)
+    plt.xlabel('t')
+    plt.ylabel('log Difference')
+    plt.title('Log Difference in Signals')
     plt.show()
     
 

@@ -1,64 +1,8 @@
-import pyaudio
-import wave
+import wave 
 import numpy as np
-import matplotlib.pyplot as plt
 
-# will need pyaudio installed to work -- was planning on installing and uninstalling it after every use
-
-def record_audio_signal(duration, output_filename="signal.wav"):
-    """
-    Function for recording an audio signal for use
-
-    output_filename: file name to be used when saving the signal recorded
-    """
-    # Parameters for recording
-    sample_rate = 20000  # sample rate in Hz
-    channels = 1  # not stereo
-    chunk = 1024  # size of each buffer chunk
-
-    # Initialize PyAudio
-    p = pyaudio.PyAudio()
-
-    # Open a stream for recording
-    stream = p.open(format=pyaudio.paInt16,
-                    channels=channels,
-                    rate=sample_rate,
-                    input=True,
-                    frames_per_buffer=chunk)
-
-    print("Recording...")
-
-    # Record data in chunks
-    frames = []
-    for _ in range(0, int(sample_rate / chunk * duration)):
-        data = stream.read(chunk)
-        frames.append(data)
-
-    print("Recording complete.")
-
-    # Stop and close the stream
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
-    # Save recorded data to a .wav file
-    with wave.open(output_filename, 'wb') as wf:
-        wf.setnchannels(channels)
-        wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
-        wf.setframerate(sample_rate)
-        wf.writeframes(b''.join(frames))
-
-    print(f"Audio saved as '{output_filename}'.")
-    return output_filename
-
-
-def load_audio_signal(output_filename="signal.wav"):
-    """
-    Loads the .wav file passed in, shoudl typically be used in combination with the above method 
-    to record and read out an audio file
-    
-    output_filename: .wav file to read from
-    """
+'''Loads the .wav file with skipping based on timesteps'''
+def load_audio_signal(length, output_filename="signal.wav"):
     with wave.open(output_filename, 'rb') as wf:
         # Extract audio parameters
         n_channels = wf.getnchannels()
@@ -73,36 +17,28 @@ def load_audio_signal(output_filename="signal.wav"):
         # If stereo, reshape array to separate channels
         if n_channels > 1:
             audio_array = audio_array.reshape(-1, n_channels)
-
+        
+        # Normalize audio signal and account for incomplete reads
         # audio_array is the non normalized signal
-
         max_value = np.max(audio_array)
         normalized_audio_array = audio_array / max_value
-        normalized_audio_array = np.append(normalized_audio_array, np.zeros(100001-normalized_audio_array.shape[0]))
-        
-    return normalized_audio_array
+        indices = np.linspace(0, audio_array.size - 1, num=length, dtype=int) # Want integers (non-decimal values)
+        skipped_audio_array = normalized_audio_array[indices]
+
+    return skipped_audio_array
 
 
-def square_wave_signal(length=5):
-    """
-    Generates a random binary signal
-    Length: # of nodes in the signal (0 or 1)
-    """
-    A = 1       # amplitude
-    Tp = 1      # pulse duration
-
-    signal = np.zeros(length)
-    for index in range(length):
-        signal[index] = np.round(np.random.rand())
-
+'''Generate constant signal'''
+def load_constant_signal(length, value, output_filename="signal.wav"):
+    signal = np.zeros(length) + value
     return signal
 
 
-'''Record generic audio signal (voice or song)'''
-def main():
-    record_audio_signal(100)
-    
-
-if __name__ == "__main__":
-    main()
+''''Generates a random binary signal'''
+def load_digital_signal(length, amplitude, pulse):
+    signal = np.zeros(length)
+    for index in range(0, length, pulse):
+        signal[index] = amplitude*np.round(np.random.rand())
+        
+    return signal
     
