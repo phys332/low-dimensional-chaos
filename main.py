@@ -231,29 +231,61 @@ def main():
     plt.title('Lorenz Map')
     plt.show()
     
-    # Plot for original signal and recovered signal
-    plt.figure(num=6,figsize=(10,10),dpi=100,facecolor='white')
-    plt.subplot(221)
-    plt.plot(t, SystemParameters.perturbation, linestyle='-', color='black', linewidth=1.0)
-    plt.xlabel('t')
-    plt.ylabel('s(t)')
-    plt.title('Original Signal vs. t')
+    # Plot differences in variables with receiver system is present
+    if (len(values) > 3):
+        plt.figure(num=6,figsize=(5,6),dpi=100,facecolor='white')
+        
+        # u-x vs. T
+        plt.subplot(311)
+        plt.plot(t, np.abs(u-x), linestyle='-', color='black', linewidth=1.0)
+        plt.xlabel('t')
+        plt.ylabel('|u-x|')
+        plt.title('Difference Between U and X')
+        
+        # v-y vs. T
+        plt.subplot(312)
+        plt.plot(t, np.abs(v-y), linestyle='-', color='black', linewidth=1.0)
+        plt.xlabel('t')
+        plt.ylabel('|v-y|')
+        plt.title('Difference Between V and Y')
+        
+        # w-z vs. T
+        plt.subplot(313)
+        plt.plot(t, np.abs(w-z), linestyle='-', color='black', linewidth=1.0)
+        plt.xlabel('t')
+        plt.ylabel('|w-z|')
+        plt.title('Difference Between W and Z')
+
+        plt.tight_layout()
+        plt.show()
+        
     
-    plt.subplot(223)
-    x_perturbed = x + SystemParameters.perturbation
-    recovered_signal = x_perturbed - u
-    plt.plot(t, recovered_signal, linestyle='-', color='black', linewidth=1.0)
-    plt.xlabel('t')
-    plt.ylabel('X(t) - u')
-    plt.title('Recovered Signal vs. t')
-    
-    # Log difference
-    plt.figure(num=7,figsize=(5,8),dpi=100,facecolor='white')
-    plt.plot(t, np.log(np.abs(recovered_signal - SystemParameters.perturbation)), linestyle='-', color='black', linewidth=1.0)
-    plt.xlabel('t')
-    plt.ylabel('log Difference')
-    plt.title('Log Difference in Signals')
-    plt.show()
+    # Plot perturbation siganal if present
+    if (SystemParameters.perturbation is not None):
+        # Plot for original signal and recovered signal
+        plt.figure(num=7,figsize=(10,10),dpi=100,facecolor='white')
+        plt.subplot(221)
+        plt.plot(t, SystemParameters.perturbation, linestyle='-', color='black', linewidth=1.0)
+        plt.xlabel('t')
+        plt.ylabel('s(t)')
+        plt.title('Original Signal vs. t')
+        
+        plt.subplot(223)
+        x_perturbed = x + SystemParameters.perturbation
+        recovered_signal = x_perturbed - u
+        plt.plot(t, recovered_signal, linestyle='-', color='black', linewidth=1.0)
+        plt.xlabel('t')
+        plt.ylabel('X(t) - u')
+        plt.title('Recovered Signal vs. t')
+        plt.show()
+        
+        # Log difference
+        plt.figure(num=7,figsize=(5,8),dpi=100,facecolor='white')
+        plt.plot(t, np.log10(np.abs(recovered_signal - SystemParameters.perturbation)), linestyle='-', color='black', linewidth=1.0)
+        plt.xlabel('t')
+        plt.ylabel('log Difference')
+        plt.title('Log Difference in Signals')
+        plt.show()
     
 
 if __name__ == "__main__":
